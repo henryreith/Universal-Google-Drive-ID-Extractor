@@ -1,0 +1,11 @@
+{
+  "name": "google-id-extractor-api",
+  "version": "1.0.0",
+  "description": "A universal serverless API to extract Google Drive IDs from URLs.",
+  "type": "module",
+  "scripts": {
+    "start": "echo 'This is a serverless function, deploy on Vercel to use.' && exit 1"
+  },
+  "author": "Henry Reith",
+  "license": "MIT"
+}
