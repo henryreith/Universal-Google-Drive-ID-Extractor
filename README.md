@@ -73,7 +73,7 @@ This is the most efficient method for processing many URLs from a database or sp
 
 **Success Response (200):**
 
-Returns an array of results. If an ID can't be found for a specific URL, its googleID will be null.
+Returns an array of results. If an ID can't be found for a specific URL, its googleDriveID will be null.
 
 { \
   "results": [ \
@@ -82,7 +82,7 @@ Returns an array of results. If an ID can't be found for a specific URL, its goo
       "googleDriveID": "1aBcD_..." \
     }, \
     { \
-      "url": "[https://drive.google.com/drive/folders/2bCdE](https://drive.google.com/drive/folders/2bCdE)_...", \
+      "url": "[https.google.com/drive/folders/2bCdE](https://https.google.com/drive/folders/2bCdE)_...", \
       "googleDriveID": "2bCdE_..." \
     }, \
     { \
@@ -99,7 +99,7 @@ Returns an array of results. If an ID can't be found for a specific URL, its goo
 
 ### curl (Batch Request)
 
-curl -X POST 'https://universal-google-drive-id-extractor.vercel.app/api' \ \
+curl -X POST '[https://universal-google-drive-id-extractor.vercel.app/api](https://universal-google-drive-id-extractor.vercel.app/api)' \ \
 -H 'Content-Type: application/json' \ \
 -d '{ \
   "urls": [ \
@@ -114,7 +114,7 @@ curl -X POST 'https://universal-google-drive-id-extractor.vercel.app/api' \ \
 
 async function getMultipleGoogleIDs(urlArray) { \
   try { \
-    const response = await fetch('https://universal-google-drive-id-extractor.vercel.app/api', { \
+    const response = await fetch('[https://universal-google-drive-id-extractor.vercel.app/api](https://universal-google-drive-id-extractor.vercel.app/api)', { \
       method: 'POST', \
       headers: { 'Content-Type': 'application/json' }, \
       body: JSON.stringify({ urls: urlArray }) \
@@ -127,7 +127,7 @@ async function getMultipleGoogleIDs(urlArray) { \
     } \
  \
     console.log('Batch results:', data.results); \
-    // data.results is [ { url: "...", googleID: "..." }, ... ] \
+    // data.results is [ { url: "...", googleDriveID: "..." }, ... ] \
     return data.results; \
      \
   } catch (error) { \
@@ -149,7 +149,7 @@ getMultipleGoogleIDs([ \
 
 1. Use an **Array Aggregator** to gather all your URLs into a single array.
 2. Add the **HTTP > Make a request** module *after* the aggregator.
-3. **URL:** https://universal-google-drive-id-extractor.vercel.app/api
+3. **URL:** httpsD://universal-google-drive-id-extractor.vercel.app/api
 4. **Method:** POST
 5. **Body type:** Raw
 6. **Content type:** JSON (application/json)
@@ -164,4 +164,4 @@ getMultipleGoogleIDs([ \
 
 ## License
 
-This project is open-source and available under the [MIT License](https://opensource.org/licenses/MIT).
+This project is open-source and available under the [MIT License](https://www.google.com/search?q=httpshttps://opensource.org/licenses/MIT).
