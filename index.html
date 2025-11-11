@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive ID Extractor API</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Set up Tailwind for dark mode and Inter font
+        tailwind.config = {
+            darkMode: 'class', // 'class' enables manual dark mode toggling
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+        // Apply dark mode based on user's system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <style>
+        /* Simple body styles for the Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
+    
+    <div class="flex flex-col items-center justify-center min-h-full p-6">
+        <div class="w-full max-w-2xl text-center">
+            
+            <!-- Header -->
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+                Universal Google Drive ID Extractor
+            </h1>
+            <p class="mt-3 text-lg text-gray-600 dark:text-gray-300">
+                A free, open-source API utility to extract Document or Folder IDs from any Google Drive URL.
+            </p>
+
+            <!-- API Usage Box -->
+            <div class="mt-10 text-left bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold mb-4">How to Use This API</h2>
+                    
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">
+                        Make a <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">POST</span> request to the endpoint:
+                    </p>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 rounded text-sm overflow-x-auto"><code>/api/</code></pre>
+                    
+                    <p class="text-gray-700 dark:text-gray-300 mt-6 mb-2">
+                        With a JSON body specifying the <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">url</span>:
+                    </p>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 rounded text-sm overflow-x-auto"><code>{
+  "url": "https://docs.google.com/document/d/1aBcD_.../edit"
+}</code></pre>
+
+                    <p class="text-gray-700 dark:text-gray-300 mt-6 mb-2">
+                        A successful request will return:
+                    </p>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-green-700 dark:text-green-300 p-4 rounded text-sm overflow-x-auto"><code>{
+  "googleID": "1aBcD_..."
+}</code></pre>
+
+                    <p class="text-gray-700 dark:text-gray-300 mt-6 mb-2">
+                        An error will return:
+                    </p>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-red-700 dark:text-red-300 p-4 rounded text-sm overflow-x-auto"><code>{
+  "error": "Could not find a valid Google Drive ID..."
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Links -->
+            <div class="mt-8 flex items-center justify-center gap-x-6">
+                <a 
+                    href="https://github.com/your-username/your-repo-name" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="rounded-md bg-gray-700 dark:bg-gray-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 dark:hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500"
+                >
+                    View on GitHub &rarr;
+                </a>
+                <a 
+                    href="https://henryreith.co" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="text-sm font-semibold leading-6 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+                >
+                    Read the tutorial <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
