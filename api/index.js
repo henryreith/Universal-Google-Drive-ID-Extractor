@@ -3,35 +3,66 @@
  * Universal Google Drive ID Extractor (Serverless Function)
  * =============================================================================
  *
- * HOW IT WORKS:
- * 1. It receives an HTTP POST request with a JSON body: { "url": "..." }
- * 2. It runs the *exact same regex* as the Make.com scenario.
- * 3. It returns a JSON response: { "googleID": "..." } or { "error": "..." }
+ * This serverless function creates a public API endpoint to extract
+ * Google Drive IDs from a single URL or a batch of URLs.
+ *
+ * It is designed to be a "utility" for automation platforms (Make, n8n)
+ * and AI Agents, saving them credits/operations by offloading this
+ * common parsing task to a single, free API call.
+ *
+ * =============================================================================
+ * API ENDPOINTS
+ * =============================================================================
+ *
+ * This function handles two types of requests to the SAME endpoint (`/api`):
+ *
+ * 1.  SINGLE URL REQUEST:
+ * POST /api/
+ * Body: { "url": "..." }
+ * Returns: { "googleID": "..." }
+ *
+ * 2.  BATCH URL REQUEST:
+ * POST /api/
+ * Body: { "urls": ["...", "...", ...] }
+ * Returns: { "results": [ { "url": "...", "googleID": "..." }, ... ] }
  *
  * =============================================================================
  */
 
-// This is the main handler function that Vercel (and other platforms) will run.
-// `req` is the incoming request, `res` is the response we send back.
+// This is the main regex that does all the work.
+// It looks for /d/, folders/, or id= and captures the 25+ char ID.
+const GID_REGEX = /(?:/d/|folders/|id=)([a-zA-Z0-9_-]{25,})/;
+
+/**
+ * A simple helper function to extract the ID from a single URL.
+ * @param {string} url - The Google Drive URL.
+ * @returns {string | null} The found ID, or null if not found.
+ */
+function extractId(url) {
+  if (typeof url !== 'string') {
+    return null;
+  }
+  const matches = url.match(GID_REGEX);
+  return matches && matches[1] ? matches[1] : null;
+}
+
+// This is the main handler function that Vercel will run.
 export default async function handler(req, res) {
   
   // --- CORS HEADERS ---
-  // Set CORS headers to allow *any* website to call this API.
-  // This is what makes it "universally accessible".
-  // For more security, you could restrict this to 'henryreith.co'
+  // Allow any website to call this API.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // --- PREFLIGHT REQUESTS ---
+  // --- PREFLIGHT REQUEST ---
   // Handle "preflight" OPTIONS requests from browsers.
-  // This is a standard part of CORS.
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   // --- METHOD GUARD ---
-  // We only want to accept POST requests.
+  // We only accept POST requests.
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
@@ -39,36 +70,47 @@ export default async function handler(req, res) {
 
   // --- MAIN LOGIC ---
   try {
-    // Get the "url" from the request body.
-    // Vercel automatically parses the JSON body for us.
-    const { url } = req.body;
+    const { url, urls } = req.body;
 
-    // --- VALIDATION ---
-    // Ensure the 'url' property exists and is a string.
-    if (!url || typeof url !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid "url" in request body. Expecting { "url": "..." }' });
+    // --- BATCH PROCESSING ---
+    // Check if the `urls` key exists and is an array.
+    if (urls && Array.isArray(urls)) {
+      
+      // Process each URL in the array using the helper function.
+      const results = urls.map(currentUrl => {
+        return {
+          url: currentUrl,
+          googleID: extractId(currentUrl) // Returns the ID or null
+        };
+      });
+
+      // Return the array of results.
+      return res.status(200).json({ results: results });
     }
 
-    // --- THE REGEX ---
-    // This is the same proven pattern from your Make.com scenario.
-    const regex = /(?:/d/|folders/|id=)([a-zA-Z0-9_-]{25,})/;
-    const matches = url.match(regex);
+    // --- SINGLE URL PROCESSING ---
+    // Check if the `url` key exists and is a string.
+    if (url && typeof url === 'string') {
+      const googleID = extractId(url);
 
-    // --- RESPONSE ---
-    // Check if the regex found a match (in its first capture group)
-    if (matches && matches[1]) {
-      const googleID = matches[1];
-      // Success! Send the 200 OK status and the ID.
-      return res.status(200).json({ googleID: googleID });
-    } else {
-      // We found a URL, but the regex didn't match.
-      // 404 is appropriate as the "resource" (the ID) wasn't found.
-      return res.status(404).json({ error: 'Could not find a valid Google Drive ID in the provided URL.' });
+      if (googleID) {
+        // Success! Send the 200 OK status and the ID.
+        return res.status(200).json({ googleID: googleID });
+      } else {
+        // We found a URL, but the regex didn't match.
+        return res.status(404).json({ error: 'Could not find a valid Google Drive ID in the provided URL.' });
+      }
     }
+
+    // --- VALIDATION ERROR ---
+    // If neither `url` (string) nor `urls` (array) was provided.
+    return res.status(400).json({ 
+      error: 'Invalid request body. Expecting { "url": "..." } or { "urls": ["...", ...] }' 
+    });
+
   } catch (error) {
     // --- ERROR CATCH-ALL ---
-    // Catch any other server-side errors
-    console.error(error); // Log the error to the Vercel console for debugging
+    console.error(error); // Log to Vercel console
     return res.status(500).json({ error: 'An internal server error occurred.' });
   }
 }
