@@ -1,26 +1,3 @@
-<!-----
-
-
-
-Conversion time: 0.682 seconds.
-
-
-Using this Markdown file:
-
-1. Paste this output into your source file.
-2. See the notes and action items below regarding this conversion run.
-3. Check the rendered output (headings, lists, code blocks, tables) for proper
-   formatting and use a linkchecker before you publish this page.
-
-Conversion notes:
-
-* Docs™ to Markdown version 1.0β45
-* Tue Nov 11 2025 04:49:31 GMT-0800 (PST)
-* Source doc: Thank you. One question would the way thye multip...
------>
-
-
-
 # Universal Google Drive ID Extractor
 
 A free, universal serverless API to extract Google Drive (Doc, Folder, Sheet) IDs from any URL. Supports single or batch requests.
@@ -41,9 +18,9 @@ This API solves both problems. It turns that logic into a **single, free, univer
 
 ## Live API Endpoint
 
-Once deployed, your API will be available at:
+The API is available at:
 
-https://universal-google-drive-id-extractor.vercel.app//api
+https://universal-google-drive-id-extractor.vercel.app/api
 
 
 ## How to Use the API
