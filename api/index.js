@@ -19,12 +19,12 @@
  * 1.  SINGLE URL REQUEST:
  * POST /api/
  * Body: { "url": "..." }
- * Returns: { "googleID": "..." }
+ * Returns: { "googleDriveID": "..." }
  *
  * 2.  BATCH URL REQUEST:
  * POST /api/
  * Body: { "urls": ["...", "...", ...] }
- * Returns: { "results": [ { "url": "...", "googleID": "..." }, ... ] }
+ * Returns: { "results": [ { "url": "...", "googleDriveID": "..." }, ... ] }
  *
  * =============================================================================
  */
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       const results = urls.map(currentUrl => {
         return {
           url: currentUrl,
-          googleID: extractId(currentUrl) // Returns the ID or null
+          googleDriveID: extractId(currentUrl) // Returns the ID or null
         };
       });
 
@@ -91,11 +91,11 @@ export default async function handler(req, res) {
     // --- SINGLE URL PROCESSING ---
     // Check if the `url` key exists and is a string.
     if (url && typeof url === 'string') {
-      const googleID = extractId(url);
+      const googleDriveID = extractId(url);
 
-      if (googleID) {
+      if (googleDriveID) {
         // Success! Send the 200 OK status and the ID.
-        return res.status(200).json({ googleID: googleID });
+        return res.status(200).json({ googleDriveID: googleDriveID });
       } else {
         // We found a URL, but the regex didn't match.
         return res.status(404).json({ error: 'Could not find a valid Google Drive ID in the provided URL.' });
