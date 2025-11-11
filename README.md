@@ -1,98 +1,204 @@
-# **Universal Google Drive ID Extractor**
-
-A free, universal serverless API to extract Google Drive (Doc, Folder, Sheet) IDs from any URL.
-
-This project provides a single, reliable API endpoint that you can call from any automation platform (Make.com, n8n, Zapier), website, or script to instantly parse a Google Drive ID from a URL.
-
-It's built to be deployed in 1-click to Vercel's free "Hobby" plan.
+<!-----
 
 
-## **Why Does This Exist?**
+
+Conversion time: 0.682 seconds.
+
+
+Using this Markdown file:
+
+1. Paste this output into your source file.
+2. See the notes and action items below regarding this conversion run.
+3. Check the rendered output (headings, lists, code blocks, tables) for proper
+   formatting and use a linkchecker before you publish this page.
+
+Conversion notes:
+
+* Docs™ to Markdown version 1.0β45
+* Tue Nov 11 2025 04:49:31 GMT-0800 (PST)
+* Source doc: Thank you. One question would the way thye multip...
+----->
+
+
+
+# Universal Google Drive ID Extractor
+
+A free, universal serverless API to extract Google Drive (Doc, Folder, Sheet) IDs from any URL. Supports single or batch requests.
+
+This project provides a single, reliable API endpoint that you can call from any automation platform (Make.com, n8n, Zapier), AI Agent, website, or script to instantly parse Google Drive IDs.
+
+
+## Why Does This Exist?
 
 In automation platforms, you often find yourself rebuilding the same logic—like complex Regex—in multiple different workflows. This violates the **"DRY" (Don't Repeat Yourself)** principle.
 
-If you need to fix a bug or improve the regex, you have to find and update it in every single workflow.
+Worse, in tools like Make.com or when building AI Agents, every step (like a "Text Parser") **costs you credits or operations**.
 
-This API solves that. It turns that logic into a **universal utility**. Instead of a "Text Parser" module, you just use one "HTTP Request" module and call this API.
+This API solves both problems. It turns that logic into a **single, free, universal utility**. Instead of 3-4 modules, you use one HTTP request. Instead of 100 API calls for 100 URLs, you can send them all in one batch.
 
-**Read the full tutorial and "why" on my blog:**[ https://henryreith.co](https://henryreith.co)
+**Read the full tutorial and "why" on my blog:** [https://henryreith.co](https://henryreith.co)
 
 
-## **Live API Endpoint**
+## Live API Endpoint
 
 Once deployed, your API will be available at:
 
-
-```
-https://<your-project-name>.vercel.app/api
-```
+https://universal-google-drive-id-extractor.vercel.app//api
 
 
+## How to Use the API
 
-## **How to Use the API**
-
-Make a **<code>POST</code>** request to the `/api` endpoint with a JSON body containing the `url`.
+Make a **POST** request to the /api endpoint. The API is backward-compatible and accepts two different JSON structures.
 
 
-### **Request**
+### 1. Single URL Request
 
-**Endpoint:** `POST /api/`
+**Endpoint:** POST /api/
 
 **Body:**
 
-
-### **Success Response (200)**
-
-If an ID is found, the API will return a JSON object with the `googleID`.
-
-
-### **Error Response (404 / 400)**
-
-If no ID is found or the URL is missing, it will return an error.
+{ \
+  "url": "[https://docs.google.com/document/d/1aBcD_eX-yZ_1234567890-AbCdEfGhIjKlMnOp/edit?usp=sharing](https://docs.google.com/document/d/1aBcD_eX-yZ_1234567890-AbCdEfGhIjKlMnOp/edit?usp=sharing)" \
+} \
 
 
-## **Examples**
+**Success Response (200):**
+
+{ \
+  "googleID": "1aBcD_eX-yZ_1234567890-AbCdEfGhIjKlMnOp" \
+} \
 
 
-### **<code>curl</code> (Command Line)**
+**Error Response (404):**
 
-
-### **JavaScript <code>fetch</code> (Web App)**
-
-
-### **Make.com (HTTP Module)**
-
-You can use this to replace your "Callable Scenario" with a universal API call.
+{ \
+  "error": "Could not find a valid Google Drive ID in the provided URL." \
+} \
 
 
 
-1. Add the **HTTP > Make a request** module.
-2. **URL:** `https://&lt;your-project-name>.vercel.app/api`
-3. **Method:** `POST`
-4. **Body type:** `Raw`
-5. **Content type:** `JSON (application/json)`
-6. **Request content:**
-7.  \
-**Parse response:** Yes
+### 2. Batch (Multiple) URLs Request
 
-The module will output `data.googleID`.
+This is the most efficient method for processing many URLs from a database or spreadsheet.
+
+**Endpoint:** POST /api/
+
+**Body:**
+
+{ \
+  "urls": [ \
+    "[https://docs.google.com/document/d/1aBcD_.../edit](https://docs.google.com/document/d/1aBcD_.../edit)", \
+    "[https://drive.google.com/drive/folders/2bCdE](https://drive.google.com/drive/folders/2bCdE)_...", \
+    "[https://invalid.url/foo](https://invalid.url/foo)" \
+  ] \
+} \
 
 
-## **Deploy Your Own**
+**Success Response (200):**
+
+Returns an array of results. If an ID can't be found for a specific URL, its googleID will be null.
+
+{ \
+  "results": [ \
+    { \
+      "url": "[https://docs.google.com/document/d/1aBcD_.../edit](https://docs.google.com/document/d/1aBcD_.../edit)", \
+      "googleID": "1aBcD_..." \
+    }, \
+    { \
+      "url": "[https://drive.google.com/drive/folders/2bCdE](https://drive.google.com/drive/folders/2bCdE)_...", \
+      "googleID": "2bCdE_..." \
+    }, \
+    { \
+      "url": "[https://invalid.url/foo](https://invalid.url/foo)", \
+      "googleID": null \
+    } \
+  ] \
+} \
+
+
+
+## Examples
+
+
+### curl (Batch Request)
+
+curl -X POST 'https://&lt;your-project-name>.vercel.app/api' \ \
+-H 'Content-Type: application/json' \ \
+-d '{ \
+  "urls": [ \
+    "[https://docs.google.com/spreadsheets/d/1zyX-AbCd_.../edit](https://docs.google.com/spreadsheets/d/1zyX-AbCd_.../edit)", \
+    "[https://docs.google.com/document/d/2bCdE_.../edit](https://docs.google.com/document/d/2bCdE_.../edit)" \
+  ] \
+}' \
+
+
+
+### JavaScript fetch (Batch Request)
+
+async function getMultipleGoogleIDs(urlArray) { \
+  try { \
+    const response = await fetch('https://&lt;your-project-name>.vercel.app/api', { \
+      method: 'POST', \
+      headers: { 'Content-Type': 'application/json' }, \
+      body: JSON.stringify({ urls: urlArray }) \
+    }); \
+ \
+    const data = await response.json(); \
+ \
+    if (!response.ok) { \
+      throw new Error(data.error || 'Something went wrong'); \
+    } \
+ \
+    console.log('Batch results:', data.results); \
+    // data.results is [ { url: "...", googleID: "..." }, ... ] \
+    return data.results; \
+     \
+  } catch (error) { \
+    console.error('Failed to extract IDs:', error.message); \
+  } \
+} \
+ \
+// Example usage: \
+getMultipleGoogleIDs([ \
+  '[https://drive.google.com/drive/folders/1-2345_AbCdEf](https://drive.google.com/drive/folders/1-2345_AbCdEf)...', \
+  '[https://docs.google.com/document/d/2-3456_BcDeFg](https://docs.google.com/document/d/2-3456_BcDeFg)...' \
+]); \
+
+
+
+### Make.com (HTTP Module for Batch)
+
+
+
+1. Use an **Array Aggregator** to gather all your URLs into a single array.
+2. Add the **HTTP > Make a request** module *after* the aggregator.
+3. **URL:** https://universal-google-drive-id-extractor.vercel.app/api
+4. **Method:** POST
+5. **Body type:** Raw
+6. **Content type:** JSON (application/json)
+7. **Request content:** \
+{ \
+  "urls": {{ 1.array }} \
+} \
+
+8. **Parse response:** Yes
+9. Now you can iterate over the data.results array that is returned.
+
+
+## Deploy Your Own
 
 You can deploy this project to your own Vercel account in 60 seconds.
 
 
 
 1. **Fork** this repository to your own GitHub account.
-2. Create a new project on[ Vercel](https://vercel.com/new).
-3. Import your forked repository.
-4. Vercel will automatically detect it's a Node.js project.
-5. Click **Deploy**.
+2. Click the "Deploy with Vercel" button at the top of this README.
+3. Vercel will import your forked repository.
+4. Click **Deploy**.
 
-That's it! Vercel will build the `api/index.js` file and give you a public URL.
+That's it! Vercel will build the api/index.js file and give you a public URL.
 
 
-## **License**
+## License
 
-This project is open-source and available under the[ MIT License](https://opensource.org/licenses/MIT).
+This project is open-source and available under the [MIT License](https://opensource.org/licenses/MIT).
