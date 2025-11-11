@@ -82,7 +82,7 @@ Returns an array of results. If an ID can't be found for a specific URL, its goo
       "googleDriveID": "1aBcD_..." \
     }, \
     { \
-      "url": "[https.google.com/drive/folders/2bCdE](https://https.google.com/drive/folders/2bCdE)_...", \
+      "url": "[https://drive.google.com/drive/folders/2bCdE](https://drive.google.com/drive/folders/2bCdE)_...", \
       "googleDriveID": "2bCdE_..." \
     }, \
     { \
@@ -149,7 +149,7 @@ getMultipleGoogleIDs([ \
 
 1. Use an **Array Aggregator** to gather all your URLs into a single array.
 2. Add the **HTTP > Make a request** module *after* the aggregator.
-3. **URL:** httpsD://universal-google-drive-id-extractor.vercel.app/api
+3. **URL:** https://universal-google-drive-id-extractor.vercel.app/api
 4. **Method:** POST
 5. **Body type:** Raw
 6. **Content type:** JSON (application/json)
@@ -164,4 +164,4 @@ getMultipleGoogleIDs([ \
 
 ## License
 
-This project is open-source and available under the [MIT License](https://www.google.com/search?q=httpshttps://opensource.org/licenses/MIT).
+This project is open-source and available under the [MIT License](https://opensource.org/licenses/MIT).
