@@ -7,7 +7,7 @@ This project provides a single, reliable API endpoint that you can call from any
 
 ## Why Does This Exist?
 
-In automation platforms, you often find yourself rebuilding the same logic—like complex Regex—in multiple different workflows. This violates the **"DRY" (Don't Repeat Yourself)** principle.
+In automation platforms, you often find yourself rebuilding the same logic-like complex Regex-in multiple different workflows. This violates the **"DRY" (Don't Repeat Yourself)** principle.
 
 Worse, in tools like Make.com or when building AI Agents, every step (like a "Text Parser") **costs you credits or operations**.
 
