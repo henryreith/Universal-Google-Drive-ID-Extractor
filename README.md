@@ -1,8 +1,8 @@
 # Universal Google Drive ID Extractor
 
-A free, universal serverless API to extract Google Drive (Doc, Folder, Sheet) IDs from any URL. Supports single or batch requests.
+A free, universal serverless API to extract Google Drive (Doc, Folder, Sheet) IDs from any full Google Drive URL. Supports single or batch requests.
 
-This project provides a single, reliable API endpoint that you can call from any automation platform (Make.com, n8n, Zapier), AI Agent, website, or script to instantly parse Google Drive IDs.
+This project provides a single, reliable API endpoint that you can call from any automation platform (Make.com, n8n, Zapier), AI Agent, website, or script to instantly parse Google Drive IDs from the full doc or folder URL.
 
 
 ## Why Does This Exist?
@@ -42,7 +42,7 @@ Make a **POST** request to the /api endpoint. The API is backward-compatible and
 **Success Response (200):**
 
 { \
-  "googleID": "1aBcD_eX-yZ_1234567890-AbCdEfGhIjKlMnOp" \
+  "googleDriveID": "1aBcD_eX-yZ_1234567890-AbCdEfGhIjKlMnOp" \
 } \
 
 
@@ -79,15 +79,15 @@ Returns an array of results. If an ID can't be found for a specific URL, its goo
   "results": [ \
     { \
       "url": "[https://docs.google.com/document/d/1aBcD_.../edit](https://docs.google.com/document/d/1aBcD_.../edit)", \
-      "googleID": "1aBcD_..." \
+      "googleDriveID": "1aBcD_..." \
     }, \
     { \
       "url": "[https://drive.google.com/drive/folders/2bCdE](https://drive.google.com/drive/folders/2bCdE)_...", \
-      "googleID": "2bCdE_..." \
+      "googleDriveID": "2bCdE_..." \
     }, \
     { \
       "url": "[https://invalid.url/foo](https://invalid.url/foo)", \
-      "googleID": null \
+      "googleDriveID": null \
     } \
   ] \
 } \
@@ -99,7 +99,7 @@ Returns an array of results. If an ID can't be found for a specific URL, its goo
 
 ### curl (Batch Request)
 
-curl -X POST 'https://&lt;your-project-name>.vercel.app/api' \ \
+curl -X POST 'https://universal-google-drive-id-extractor.vercel.app/api' \ \
 -H 'Content-Type: application/json' \ \
 -d '{ \
   "urls": [ \
@@ -114,7 +114,7 @@ curl -X POST 'https://&lt;your-project-name>.vercel.app/api' \ \
 
 async function getMultipleGoogleIDs(urlArray) { \
   try { \
-    const response = await fetch('https://&lt;your-project-name>.vercel.app/api', { \
+    const response = await fetch('https://universal-google-drive-id-extractor.vercel.app/api', { \
       method: 'POST', \
       headers: { 'Content-Type': 'application/json' }, \
       body: JSON.stringify({ urls: urlArray }) \
@@ -160,20 +160,6 @@ getMultipleGoogleIDs([ \
 
 8. **Parse response:** Yes
 9. Now you can iterate over the data.results array that is returned.
-
-
-## Deploy Your Own
-
-You can deploy this project to your own Vercel account in 60 seconds.
-
-
-
-1. **Fork** this repository to your own GitHub account.
-2. Click the "Deploy with Vercel" button at the top of this README.
-3. Vercel will import your forked repository.
-4. Click **Deploy**.
-
-That's it! Vercel will build the api/index.js file and give you a public URL.
 
 
 ## License
