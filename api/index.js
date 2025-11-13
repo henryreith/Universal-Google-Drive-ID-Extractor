@@ -6,22 +6,14 @@
  * This serverless function creates a public API endpoint to extract
  * Google Drive IDs from a single URL or a batch of URLs.
  *
- * It is designed to be a "utility" for automation platforms (Make, n8n)
- * and AI Agents, saving them credits/operations by offloading this
- * common parsing task to a single, free API call.
+ * It is designed to be a "utility" for automation platforms such as:
+ * - Make.com
+ * - n8n
+ * - Zapier
+ * - AI Agents (OpenAI, Claude, etc.)
  *
- * =============================================================================
- */
-
-/**
- * =============================================================================
- * Universal Google Drive ID Extractor (Serverless Function)
- * =============================================================================
- *
- * Public API endpoint to extract Google Drive IDs from a single URL
- * or a batch of URLs.
- *
- * Designed for automation platforms (Make, n8n, Zapier, etc.) and AI agents.
+ * This API offloads a repetitive parsing problem, saving credits and
+ * processing time for your automation scenarios.
  *
  * =============================================================================
  * ENDPOINT
@@ -30,48 +22,87 @@
  *  POST https://universal-google-drive-id-extractor.vercel.app/api
  *
  *  Body (single):
- *    { "url": "https://docs.google.com/document/d/ABC123.../edit" }
+ *    {
+ *      "url": "https://docs.google.com/document/d/ABC123.../edit"
+ *    }
  *
  *  Body (batch):
- *    { "urls": ["https://...1", "https://...2", ...] }
+ *    {
+ *      "urls": [
+ *        "https://...1",
+ *        "https://...2",
+ *        ...
+ *      ]
+ *    }
  *
  * =============================================================================
  * RESPONSES
  * =============================================================================
  *
- *  Single:
- *    200 OK: { "googleDriveID": "ABC123..." }
- *    404 Not Found: { "error": "Could not find a valid Google Drive ID..." }
+ *  SINGLE:
+ *    200 OK:
+ *      {
+ *        "googleDriveID": "ABC123...",
+ *        "success": true,
+ *        "error": null
+ *      }
  *
- *  Batch:
- *    200 OK: {
- *      "results": [
- *        { "url": "https://...1", "googleDriveID": "ABC123..." },
- *        { "url": "https://...2", "googleDriveID": null }
- *      ]
- *    }
+ *    404 Not Found:
+ *      {
+ *        "googleDriveID": null,
+ *        "success": false,
+ *        "error": "Could not find a valid Google Drive ID..."
+ *      }
  *
- *  Errors:
- *    400 Bad Request: invalid body shape
- *    405 Method Not Allowed: non POST method
- *    500 Internal Server Error: unexpected failure
+ *  BATCH:
+ *    200 OK:
+ *      {
+ *        "items": [
+ *          {
+ *            "index": 0,
+ *            "input": "https://...1",
+ *            "googleDriveID": "ABC123...",
+ *            "success": true,
+ *            "error": null
+ *          },
+ *          {
+ *            "index": 1,
+ *            "input": "https://...2",
+ *            "googleDriveID": null,
+ *            "success": false,
+ *            "error": "No valid Google Drive ID found in this input."
+ *          }
+ *        ],
+ *        "meta": {
+ *          "total": 2,
+ *          "succeeded": 1,
+ *          "failed": 1
+ *        }
+ *      }
+ *
+ *  ERRORS:
+ *    400 Bad Request — invalid body shape
+ *    405 Method Not Allowed — non-POST
+ *    500 Internal Server Error — unexpected failure
  *
  * =============================================================================
  */
 
-// Matches common Google Drive URL patterns:
+// Matches the most common Google Drive URL patterns.
+//
+// Supported examples:
 // - https://docs.google.com/document/d/<ID>/edit
 // - https://docs.google.com/spreadsheets/d/<ID>/edit
 // - https://drive.google.com/file/d/<ID>/view
 // - https://drive.google.com/folders/<ID>
 // - https://drive.google.com/open?id=<ID>
 //
-// Note: forward slashes are escaped so the regex literal is valid.
+// Note: forward slashes are escaped deliberately.
 const GID_REGEX = /(?:\/d\/|folders\/|id=)([a-zA-Z0-9_-]{10,})/;
 
 /**
- * Try to extract a Google Drive ID from a URL or text.
- * Returns the ID string, or null if no match.
+ * Extract the Drive ID from a given URL or text.
+ * Returns: string | null
  */
 function extractGoogleDriveId(input) {
   if (typeof input !== "string") return null;
@@ -80,85 +111,108 @@ function extractGoogleDriveId(input) {
 }
 
 /**
- * Main serverless function handler for Vercel (Next.js API route style).
+ * =============================================================================
+ * Handler (Vercel Serverless Function)
+ * =============================================================================
  */
 export default async function handler(req, res) {
-  // Basic CORS headers so it can be called from browsers and tools
+  // Enable CORS for browser/automation compatibility
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Preflight request
+  // Handle preflight requests
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // Only allow POST for actual work
+  // Only allow POST requests for real work
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
-    return res
-      .status(405)
-      .json({ error: `Method ${req.method} Not Allowed. Use POST.` });
+    return res.status(405).json({
+      success: false,
+      error: `Method ${req.method} Not Allowed. Use POST.`
+    });
   }
 
   try {
     let body = req.body;
 
-    // On Vercel, if Content-Type is application/json, req.body is usually already parsed.
-    // But to be safe, handle the cases where it might be a string or empty.
+    // Sometimes req.body may be a string or empty depending on caller
     if (typeof body === "string") {
       body = body.trim() ? JSON.parse(body) : {};
     } else if (!body) {
-      // Fallback: read raw request stream and parse
+      // Fallback: read raw body
       let raw = "";
-      for await (const chunk of req) {
-        raw += chunk;
-      }
+      for await (const chunk of req) raw += chunk;
       body = raw.trim() ? JSON.parse(raw) : {};
     }
 
     const { url, urls } = body || {};
 
-    // -------------------------------------------------------------------------
-    // BATCH MODE: { "urls": [ "...", "..." ] }
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // BATCH MODE
+    // =========================================================================
     if (Array.isArray(urls)) {
-      const results = urls.map((u) => ({
-        url: u,
-        googleDriveID: extractGoogleDriveId(u),
-      }));
+      const items = urls.map((input, index) => {
+        const googleDriveID = extractGoogleDriveId(input);
 
-      return res.status(200).json({ results });
+        return {
+          index,
+          input,
+          googleDriveID,
+          success: Boolean(googleDriveID),
+          error: googleDriveID
+            ? null
+            : "No valid Google Drive ID found in this input."
+        };
+      });
+
+      const meta = {
+        total: items.length,
+        succeeded: items.filter(i => i.success).length,
+        failed: items.filter(i => !i.success).length
+      };
+
+      return res.status(200).json({ items, meta });
     }
 
-    // -------------------------------------------------------------------------
-    // SINGLE MODE: { "url": "..." }
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // SINGLE MODE
+    // =========================================================================
     if (typeof url === "string") {
       const googleDriveID = extractGoogleDriveId(url);
 
       if (googleDriveID) {
-        return res.status(200).json({ googleDriveID });
+        return res.status(200).json({
+          googleDriveID,
+          success: true,
+          error: null
+        });
       }
 
       return res.status(404).json({
+        googleDriveID: null,
+        success: false,
         error:
-          "Could not find a valid Google Drive ID in the provided URL or text.",
+          "Could not find a valid Google Drive ID in the provided URL or text."
       });
     }
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // VALIDATION ERROR
-    // -------------------------------------------------------------------------
+    // =========================================================================
     return res.status(400).json({
-      error:
-        'Invalid request body. Expecting { "url": "..." } or { "urls": ["...", ...] }',
+      success: false,
+      error: 'Invalid request. Expected { "url": "..." } or { "urls": [...] }.'
     });
+
   } catch (error) {
-    // Catch all unexpected errors
     console.error("Universal Google Drive ID Extractor error:", error);
+
     return res.status(500).json({
-      error: "An internal server error occurred.",
+      success: false,
+      error: "An internal server error occurred."
     });
   }
 }
