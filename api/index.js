@@ -46,23 +46,48 @@ function extractId(url) {
   return matches && matches[1] ? matches[1] : null;
 }
 
+/**
+ * [FIX] A helper function to manually parse the request body.
+ * Vercel/Node.js serverless functions do not parse JSON bodies automatically.
+ * @param {object} req - The Node.js request object.
+ * @returns {Promise<object | null>} A promise that resolves with the parsed JSON body, or null.
+ */
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      if (!body) {
+        return resolve(null); // No body
+      }
+      try {
+        resolve(JSON.parse(body)); // Try to parse
+      } catch (e) {
+        reject(new Error('Invalid JSON')); // Malformed JSON
+      }
+    });
+    req.on('error', err => {
+      reject(err);
+    });
+  });
+}
+
 // This is the main handler function that Vercel will run.
 export default async function handler(req, res) {
   
   // --- CORS HEADERS ---
-  // Allow any website to call this API.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // --- PREFLIGHT REQUEST ---
-  // Handle "preflight" OPTIONS requests from browsers.
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   // --- METHOD GUARD ---
-  // We only accept POST requests.
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
@@ -70,40 +95,38 @@ export default async function handler(req, res) {
 
   // --- MAIN LOGIC ---
   try {
-    const { url, urls } = req.body;
+    // [FIX] Manually parse the request body
+    const body = await parseBody(req);
+
+    // [FIX] Check if body exists before destructuring
+    if (!body) {
+      return res.status(400).json({ error: 'Request body is missing or empty.' });
+    }
+
+    const { url, urls } = body;
 
     // --- BATCH PROCESSING ---
-    // Check if the `urls` key exists and is an array.
     if (urls && Array.isArray(urls)) {
-      
-      // Process each URL in the array using the helper function.
       const results = urls.map(currentUrl => {
         return {
           url: currentUrl,
-          googleDriveID: extractId(currentUrl) // Returns the ID or null
+          googleDriveID: extractId(currentUrl)
         };
       });
-
-      // Return the array of results.
       return res.status(200).json({ results: results });
     }
 
     // --- SINGLE URL PROCESSING ---
-    // Check if the `url` key exists and is a string.
     if (url && typeof url === 'string') {
       const googleDriveID = extractId(url);
-
       if (googleDriveID) {
-        // Success! Send the 200 OK status and the ID.
         return res.status(200).json({ googleDriveID: googleDriveID });
       } else {
-        // We found a URL, but the regex didn't match.
         return res.status(404).json({ error: 'Could not find a valid Google Drive ID in the provided URL.' });
       }
     }
 
     // --- VALIDATION ERROR ---
-    // If neither `url` (string) nor `urls` (array) was provided.
     return res.status(400).json({ 
       error: 'Invalid request body. Expecting { "url": "..." } or { "urls": ["...", ...] }' 
     });
@@ -111,6 +134,6 @@ export default async function handler(req, res) {
   } catch (error) {
     // --- ERROR CATCH-ALL ---
     console.error(error); // Log to Vercel console
-    return res.status(500).json({ error: 'An internal server error occurred.' });
+    return res.status(500).json({ error: 'An internal server error occurred.', details: error.message });
   }
 }
