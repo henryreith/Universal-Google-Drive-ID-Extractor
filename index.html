@@ -42,12 +42,12 @@
                 Universal Google Drive ID Extractor
             </h1>
             <p class="mt-3 text-lg text-gray-600 dark:text-gray-300">
-                A free, open-source API utility to extract Document or Folder IDs from any Google Drive URL.
+                A free, open-source API utility to extract Document, Sheet, File, or Folder IDs from any Google Drive URL.
             </p>
 
             <!-- Why This is Useful Paragraph -->
             <p class="mt-6 text-base text-gray-700 dark:text-gray-400 max-w-lg mx-auto">
-                This tool solves a common problem in automation, which is needing to get the Google Drive/Docs ID from the full URL, to use the ID in a module. Instead of rebuilding the same "Get ID" logic via regex in every workflow (and paying operations/credits for it in tools like Make.com or other AI agents tools), you can just call this single, free API.
+                This tool solves a common problem in automation, which is needing to get the Google Drive/Docs ID from the full URL, to use the ID in a module. Instead of rebuilding the same "Get ID" logic via regex in every workflow (and paying operations/credits for it in tools like Make.com or other AI agent tools), you can just call this single, free API.
             </p>
             <p class="mt-4 text-base text-gray-700 dark:text-gray-400 max-w-lg mx-auto">
                 It follows the <strong class="font-semibold text-gray-900 dark:text-white">"Don't Repeat Yourself" (DRY)</strong> principle, making your automations cleaner, cheaper, and easier to maintain.
@@ -61,13 +61,13 @@
                     <p class="text-gray-700 dark:text-gray-300 mb-2">
                         Make a <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">POST</span> request to the endpoint:
                     </p>
-                    <pre class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 rounded text-sm overflow-x-auto"><code>/api/</code></pre>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 rounded text-sm overflow-x-auto"><code>https://universal-google-drive-id-extractor.vercel.app/api</code></pre>
                     
                     <!-- ### SINGLE URL ### -->
                     <h3 class="text-lg font-semibold mt-6 mb-2 text-gray-800 dark:text-gray-100">1. Single URL</h3>
                     <div class="flex items-center justify-between mb-2">
                         <p class="text-gray-700 dark:text-gray-300">
-                            With a JSON body specifying the <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">url</span>:
+                            Send a JSON body with a single <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">url</span>:
                         </p>
                         <button 
                             id="copy-button-single"
@@ -85,14 +85,25 @@
                         A successful request will return:
                     </p>
                     <pre class="bg-gray-100 dark:bg-gray-900 text-green-700 dark:text-green-300 p-4 rounded text-sm overflow-x-auto"><code>{
-  "googleDriveID": "1aBcD_..."
+  "googleDriveID": "1aBcD_...",
+  "success": true,
+  "error": null
+}</code></pre>
+
+                    <p class="text-gray-700 dark:text-gray-300 mt-4 mb-2">
+                        If no valid ID can be found, you will get:
+                    </p>
+                    <pre class="bg-gray-100 dark:bg-gray-900 text-yellow-700 dark:text-yellow-300 p-4 rounded text-sm overflow-x-auto"><code>{
+  "googleDriveID": null,
+  "success": false,
+  "error": "Could not find a valid Google Drive ID in the provided URL or text."
 }</code></pre>
 
                     <!-- ### BATCH (MULTIPLE) URLS ### -->
                     <h3 class="text-lg font-semibold mt-8 mb-2 text-gray-800 dark:text-gray-100">2. Batch (Multiple) URLs</h3>
                      <div class="flex items-center justify-between mb-2">
                         <p class="text-gray-700 dark:text-gray-300">
-                            Send an array in a <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">urls</span> key:
+                            Send an array of URLs in a <span class="font-mono p-1 rounded bg-gray-100 dark:bg-gray-700 text-sm">urls</span> key:
                         </p>
                         <button 
                             id="copy-button-batch"
@@ -111,24 +122,42 @@
 }</code></pre>
 
                     <p class="text-gray-700 dark:text-gray-300 mt-4 mb-2">
-                        A successful request will return an array of results:
+                        A successful request will return an <span class="font-mono">items</span> array and <span class="font-mono">meta</span> object:
                     </p>
                     <pre class="bg-gray-100 dark:bg-gray-900 text-green-700 dark:text-green-300 p-4 rounded text-sm overflow-x-auto"><code>{
-  "results": [
+  "items": [
     {
-      "url": "https://docs.google.com/document/d/1aBcD_.../edit",
-      "googleDriveID": "1aBcD_..."
+      "index": 0,
+      "input": "https://docs.google.com/document/d/1aBcD_.../edit",
+      "googleDriveID": "1aBcD_...",
+      "success": true,
+      "error": null
     },
     {
-      "url": "https://drive.google.com/drive/folders/2bCdE_...",
-      "googleDriveID": "2bCdE_..."
+      "index": 1,
+      "input": "https://drive.google.com/drive/folders/2bCdE_...",
+      "googleDriveID": "2bCdE_...",
+      "success": true,
+      "error": null
     },
     {
-      "url": "https://invalid.url/foo",
-      "googleDriveID": null
+      "index": 2,
+      "input": "https://invalid.url/foo",
+      "googleDriveID": null,
+      "success": false,
+      "error": "No valid Google Drive ID found in this input."
     }
-  ]
+  ],
+  "meta": {
+    "total": 3,
+    "succeeded": 2,
+    "failed": 1
+  }
 }</code></pre>
+
+                    <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        In Make.com or n8n, you can iterate over the <span class="font-mono">items</span> array and filter by <span class="font-mono">success</span> for clean downstream processing.
+                    </p>
 
                 </div>
             </div>
@@ -144,7 +173,7 @@
                     View on GitHub &rarr;
                 </a>
                 <a 
-                    href="https://henryreith.co/free-universal-api-to-get-google-drive-ids-from-drive-urls/" 
+                    href="https://henryreith.co" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     class="text-sm font-semibold leading-6 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
